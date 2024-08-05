@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSRF Test</title>
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Get Balance</h1>
+    <button id="get-balance">Get Balance (CSRF)</button>
+    <button id="get-balance-no-csrf">Get Balance (Without CSRF)</button>
+    
+    <div id="result"></div>
+
+    <script>
+        $(document).ready(function() {
+            $('#get-balance').click(function() {
+                $.post('/balance', {
+                    csrf_token: '{{ csrf_token }}'
+                }, function(data) {
+                    $('#result').text('Balance: ' + data.balance);
+                }).fail(function(xhr) {
+                    $('#result').text('Error: ' + (xhr.responseJSON ? xhr.responseJSON.error : 'Unable to connect to service.'));
+                });
+            });
+
+            $('#get-balance-no-csrf').click(function() {
+                // CSRF tokenini meta etiketinden al
+                const csrfToken = $('meta[name="csrf-token"]').attr('content');
+                
+                // CSRF tokenini boş da olsa gönder
+                $.post('/balance', {
+                    //csrf_token: csrfToken  TO TESTING THE CSRF TOKEN IS RUNNING
+                }, function(data) {
+                    $('#result').text('Balance: ' + data.balance);
+                }).fail(function(xhr) {
+                    $('#result').text('Error: ' + (xhr.responseJSON ? xhr.responseJSON.error : 'Unable to connect to service.'));
+                });
+            });
+        });
+    </script>
+</body>
+</html>
